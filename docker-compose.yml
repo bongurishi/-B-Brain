@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PROMETHEUS_URL=http://prometheus:9090
+      - DATABASE_URL=postgres://bbrain:secret@postgres:5432/bbrain
+      - KAFKA_BROKERS=kafka:9092
+    depends_on:
+      - prometheus
+      - postgres
+      - kafka
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./k8s/prometheus.yml:/etc/prometheus/prometheus.yml
+      
+  # TSDB
+  influxdb:
+    image: influxdb:2
+    ports:
+      - "8086:8086"
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: bbrain
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: bbrain
+    ports:
+      - "5432:5432"
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+
+  temporal:
+    image: temporalio/auto-setup:latest
+    ports:
+      - "7233:7233"
+      - "8233:8233"
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=bbrain
+      - POSTGRES_PWD=secret
+      - POSTGRES_SEEDS=postgres
+    depends_on:
+      - postgres
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus

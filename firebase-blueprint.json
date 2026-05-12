@@ -1,0 +1,91 @@
+{
+  "entities": {
+    "Project": {
+      "title": "Project",
+      "description": "A workspace for a user's cluster",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "UID of the user who owns this project"
+        },
+        "name": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "number"
+        }
+      },
+      "required": ["ownerId", "name", "createdAt"]
+    },
+    "Incident": {
+      "title": "Incident",
+      "description": "An automated resolution record",
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "learned": {
+          "type": "string"
+        },
+        "duration": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "number"
+        }
+      },
+      "required": ["projectId", "title", "createdAt", "learned", "duration", "date"]
+    },
+    "Snapshot": {
+      "title": "Snapshot",
+      "description": "Metrics snapshot for B Brain observability",
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "engineLatency": {
+          "type": "number"
+        },
+        "eventLag": {
+          "type": "number"
+        },
+        "decisionTime": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      },
+      "required": ["projectId", "engineLatency", "eventLag", "decisionTime", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/projects/{projectId}": {
+      "schema": {
+        "$ref": "#/entities/Project"
+      },
+      "description": "Projects/workspaces"
+    },
+    "/projects/{projectId}/incidents/{incidentId}": {
+      "schema": {
+        "$ref": "#/entities/Incident"
+      },
+      "description": "Incidents that occurred in a project"
+    },
+    "/projects/{projectId}/snapshots/{snapshotId}": {
+      "schema": {
+        "$ref": "#/entities/Snapshot"
+      },
+      "description": "B Brain latency and observability logs"
+    }
+  }
+}

@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: b-brain-os
+  namespace: b-brain
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: b-brain
+  template:
+    metadata:
+      labels:
+        app: b-brain
+    spec:
+      serviceAccountName: b-brain-sa
+      containers:
+      - name: engine
+        image: bbrain/core:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        env:
+        - name: NODE_ENV
+          value: "production"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: b-brain-service
+  namespace: b-brain
+spec:
+  type: ClusterIP
+  selector:
+    app: b-brain
+  ports:
+  - port: 80
+    targetPort: 3000

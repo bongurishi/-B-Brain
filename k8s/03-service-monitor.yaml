@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: b-brain-monitor
+  namespace: b-brain-system
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: b-brain
+      component: control-plane
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 10s
+    scrapeTimeout: 5s
